@@ -78,4 +78,11 @@ public class ObjectBuilderTest
         inOrder.verify(actual).setName("Team " + name);
         verifyNoMoreInteractions(actual);
     }
+
+    @Test
+    public void testWithNoModifiers()
+    {
+        TestObj actual = new ObjectBuilder<>(() -> mock(TestObj.class)).build();
+        verifyNoMoreInteractions(actual);
+    }
 }
