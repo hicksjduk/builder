@@ -16,15 +16,10 @@ import java.util.function.Supplier;
  */
 public class ObjectBuilder<T>
 {
-     /**
-     * The creator which is called by the builder to obtain the object to build.
-     */
-    private final Supplier<T> creator;
-
     /**
-     * The modifier, or chain of modifiers, which is called by the builder to modify the object to build.
+     * The builder function which creates and initialises the built object.
      */
-    private Consumer<T> modifier = null;
+    private Function<Void, T> builder;
 
     /**
      * Initializes the builder with the specified creator.
@@ -34,7 +29,7 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder(Supplier<T> creator)
     {
-        this.creator = creator;
+        this.builder = obj -> creator.get();
     }
 
     /**
@@ -49,7 +44,7 @@ public class ObjectBuilder<T>
     public ObjectBuilder(T object, Function<T, T> copier)
     {
         T snapshot = copier.apply(object);
-        this.creator = () -> copier.apply(snapshot);
+        this.builder = obj -> copier.apply(snapshot);
     }
 
     /**
@@ -60,12 +55,7 @@ public class ObjectBuilder<T>
      */
     public T build()
     {
-        T answer = creator.get();
-        if (modifier != null)
-        {
-            modifier.accept(answer);
-        }
-        return answer;
+        return builder.apply(null);
     }
 
     /**
@@ -77,7 +67,10 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder<T> modify(Consumer<T> modifier)
     {
-        this.modifier = this.modifier == null ? modifier : this.modifier.andThen(modifier);
+        builder = builder.andThen(obj -> {
+            modifier.accept(obj);
+            return obj;
+        });
         return this;
     }
 
