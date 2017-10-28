@@ -16,23 +16,7 @@ import java.util.function.Supplier;
  */
 public class ObjectBuilder<T>
 {
-    /**
-     * Gets a creator which is based on a copy of the specified object. Enables the initialization of a builder from a
-     * particular object (see {@link ObjectBuilder#ObjectBuilder(Object, Function)}.
-     * 
-     * @param object
-     *            the object.
-     * @param copier
-     *            a function which creates a copy of a specified object.
-     * @return a supplier which returns a copy of the input object.
-     */
-    private static <T> Supplier<T> copyCreator(T object, Function<T, T> copier)
-    {
-        T snapshot = copier.apply(object);
-        return () -> copier.apply(snapshot);
-    }
-
-    /**
+     /**
      * The creator which is called by the builder to obtain the object to build.
      */
     private final Supplier<T> creator;
@@ -64,7 +48,8 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder(T object, Function<T, T> copier)
     {
-        this(copyCreator(object, copier));
+        T snapshot = copier.apply(object);
+        this.creator = () -> copier.apply(snapshot);
     }
 
     /**
