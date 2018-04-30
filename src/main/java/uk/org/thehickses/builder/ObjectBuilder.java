@@ -19,7 +19,7 @@ public class ObjectBuilder<T>
     /**
      * The builder function which creates and initialises the built object.
      */
-    private Function<Void, T> builder;
+    private Supplier<T> builder;
 
     /**
      * Initializes the builder with the specified creator.
@@ -29,7 +29,7 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder(Supplier<T> creator)
     {
-        this.builder = obj -> creator.get();
+        this.builder = creator;
     }
 
     /**
@@ -44,7 +44,7 @@ public class ObjectBuilder<T>
     public ObjectBuilder(T object, Function<T, T> copier)
     {
         T snapshot = copier.apply(object);
-        this.builder = obj -> copier.apply(snapshot);
+        this.builder = () -> copier.apply(snapshot);
     }
 
     /**
@@ -55,7 +55,7 @@ public class ObjectBuilder<T>
      */
     public T build()
     {
-        return builder.apply(null);
+        return builder.get();
     }
 
     /**
@@ -67,10 +67,12 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder<T> modify(Consumer<T> modifier)
     {
-        builder = builder.andThen(obj -> {
+        Supplier<T> b = builder;
+        builder = ()  -> {
+            T obj = b.get();
             modifier.accept(obj);
             return obj;
-        });
+        };
         return this;
     }
 
