@@ -3,6 +3,7 @@ package uk.org.thehickses.builder;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.junit.Test;
@@ -37,6 +38,7 @@ public class ObjectBuilderTest
         verifyNoMoreInteractions(actual);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testFromCopy()
     {
@@ -44,7 +46,11 @@ public class ObjectBuilderTest
         int number = 12141142;
         boolean flag = true;
         TestObj initObj = mock(TestObj.class);
-        ObjectBuilder<TestObj> builder = new ObjectBuilder<>(initObj, o -> mock(TestObj.class));
+        TestObj snapshot = mock(TestObj.class); 
+        Function<TestObj, TestObj> copier = mock(Function.class);
+        when(copier.apply(initObj)).thenReturn(snapshot);
+        when(copier.apply(snapshot)).then(iom -> mock(TestObj.class));
+        ObjectBuilder<TestObj> builder = new ObjectBuilder<>(initObj, copier);
         builder.set(name, TestObj::setName).set(number, TestObj::setNumber).set(flag,
                 TestObj::setFlag);
         TestObj actual1 = builder.build();
@@ -57,6 +63,8 @@ public class ObjectBuilderTest
             inOrder.verify(o).setNumber(number);
             inOrder.verify(o).setFlag(flag);
         });
+        verify(copier).apply(initObj);
+        verify(copier, times(2)).apply(snapshot);
         verifyNoMoreInteractions(initObj, actual1, actual2);
     }
 
