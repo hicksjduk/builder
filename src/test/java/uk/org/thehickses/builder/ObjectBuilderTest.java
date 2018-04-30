@@ -46,13 +46,14 @@ public class ObjectBuilderTest
         int number = 12141142;
         boolean flag = true;
         TestObj initObj = mock(TestObj.class);
-        TestObj snapshot = mock(TestObj.class); 
+        TestObj snapshot = mock(TestObj.class);
         Function<TestObj, TestObj> copier = mock(Function.class);
         when(copier.apply(initObj)).thenReturn(snapshot);
         when(copier.apply(snapshot)).then(iom -> mock(TestObj.class));
-        ObjectBuilder<TestObj> builder = new ObjectBuilder<>(initObj, copier);
-        builder.set(name, TestObj::setName).set(number, TestObj::setNumber).set(flag,
-                TestObj::setFlag);
+        ObjectBuilder<TestObj> builder = new ObjectBuilder<>(initObj, copier)
+                .set(name, TestObj::setName)
+                .set(number, TestObj::setNumber)
+                .set(flag, TestObj::setFlag);
         TestObj actual1 = builder.build();
         TestObj actual2 = builder.build();
         assertThat(actual2).isNotSameAs(actual1);
