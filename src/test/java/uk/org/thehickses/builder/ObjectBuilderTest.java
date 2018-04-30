@@ -57,16 +57,16 @@ public class ObjectBuilderTest
         TestObj actual1 = builder.build();
         TestObj actual2 = builder.build();
         assertThat(actual2).isNotSameAs(actual1);
-        InOrder inOrder = inOrder(actual1, actual2);
+        InOrder inOrder = inOrder(copier, actual1, actual2);
+        inOrder.verify(copier).apply(initObj);
         Stream.of(actual1, actual2).forEach(o -> {
             assertThat(o).isNotSameAs(initObj);
             assertThat(o).isNotSameAs(snapshot);
+            inOrder.verify(copier).apply(snapshot);
             inOrder.verify(o).setName(name);
             inOrder.verify(o).setNumber(number);
             inOrder.verify(o).setFlag(flag);
         });
-        verify(copier).apply(initObj);
-        verify(copier, times(2)).apply(snapshot);
         verifyNoMoreInteractions(initObj, actual1, actual2);
     }
 
