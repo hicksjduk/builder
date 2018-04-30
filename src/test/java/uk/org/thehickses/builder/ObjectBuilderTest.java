@@ -60,6 +60,7 @@ public class ObjectBuilderTest
         InOrder inOrder = inOrder(actual1, actual2);
         Stream.of(actual1, actual2).forEach(o -> {
             assertThat(o).isNotSameAs(initObj);
+            assertThat(o).isNotSameAs(snapshot);
             inOrder.verify(o).setName(name);
             inOrder.verify(o).setNumber(number);
             inOrder.verify(o).setFlag(flag);
