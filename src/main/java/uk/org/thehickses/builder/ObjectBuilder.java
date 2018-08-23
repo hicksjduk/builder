@@ -53,9 +53,14 @@ public class ObjectBuilder<T>
      * 
      * @return the instance.
      */
-    public synchronized T build()
+    public T build()
     {
-        return builder.get();
+        Supplier<T> b;
+        synchronized (this)
+        {
+            b = builder;
+        }
+        return b.get();
     }
 
     /**
