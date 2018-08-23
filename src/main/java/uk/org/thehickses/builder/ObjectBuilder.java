@@ -29,7 +29,7 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder(Supplier<T> creator)
     {
-        this.builder = creator;
+        builder = creator;
     }
 
     /**
@@ -44,7 +44,7 @@ public class ObjectBuilder<T>
     public ObjectBuilder(T object, Function<T, T> copier)
     {
         T snapshot = copier.apply(object);
-        this.builder = () -> copier.apply(snapshot);
+        builder = () -> copier.apply(snapshot);
     }
 
     /**
@@ -53,7 +53,7 @@ public class ObjectBuilder<T>
      * 
      * @return the instance.
      */
-    public T build()
+    public synchronized T build()
     {
         return builder.get();
     }
@@ -65,7 +65,7 @@ public class ObjectBuilder<T>
      *            a consumer which accepts the built object and may perform any processing on it.
      * @return the builder, to enable chaining of calls.
      */
-    public ObjectBuilder<T> modify(Consumer<T> modifier)
+    public synchronized ObjectBuilder<T> modify(Consumer<T> modifier)
     {
         Supplier<T> b = builder;
         builder = ()  -> {
