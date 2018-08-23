@@ -67,7 +67,7 @@ public class ObjectBuilderTest
             inOrder.verify(o).setNumber(number);
             inOrder.verify(o).setFlag(flag);
         });
-        verifyNoMoreInteractions(initObj, actual1, actual2);
+        verifyNoMoreInteractions(initObj, snapshot, copier, actual1, actual2);
     }
 
     @Test
