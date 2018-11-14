@@ -70,7 +70,7 @@ public class ObjectBuilder<T>
      *            a consumer which accepts the built object and may perform any processing on it.
      * @return the builder, to enable chaining of calls.
      */
-    public synchronized ObjectBuilder<T> modify(Consumer<T> modifier)
+    public synchronized ObjectBuilder<T> modify(Consumer<? super T> modifier)
     {
         Supplier<T> b = builder;
         builder = ()  -> {
@@ -90,7 +90,7 @@ public class ObjectBuilder<T>
      *            a consumer which invokes the setter method on the built object, passing the specified value.
      * @return the builder, to enable chaining of calls.
      */
-    public <V> ObjectBuilder<T> set(V value, BiConsumer<T, V> setter)
+    public <V> ObjectBuilder<T> set(V value, BiConsumer<? super T, V> setter)
     {
         return modify(obj -> setter.accept(obj, value));
     }

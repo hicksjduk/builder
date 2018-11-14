@@ -11,10 +11,13 @@ import org.mockito.InOrder;
 
 public class ObjectBuilderTest
 {
-    private static interface TestObj
+    private static interface TestSuper
     {
         void setName(String name);
-
+    }
+    
+    private static interface TestObj extends TestSuper
+    {
         void setNumber(int number);
 
         void setFlag(boolean flag);
@@ -27,7 +30,7 @@ public class ObjectBuilderTest
         int number = 12141142;
         boolean flag = true;
         TestObj actual = new ObjectBuilder<>(() -> mock(TestObj.class))
-                .set(name, TestObj::setName)
+                .set(name, TestSuper::setName)
                 .set(number, TestObj::setNumber)
                 .set(flag, TestObj::setFlag)
                 .build();
