@@ -41,7 +41,7 @@ public class ObjectBuilder<T>
      * @param copier
      *            a function which creates a copy of a specified object.
      */
-    public ObjectBuilder(T object, Function<T, T> copier)
+    public ObjectBuilder(T object, Function<? super T, ? extends T> copier)
     {
         T snapshot = copier.apply(object);
         builder = () -> copier.apply(snapshot);
@@ -90,7 +90,7 @@ public class ObjectBuilder<T>
      *            a consumer which invokes the setter method on the built object, passing the specified value.
      * @return the builder, to enable chaining of calls.
      */
-    public <V> ObjectBuilder<T> set(V value, BiConsumer<? super T, V> setter)
+    public <V> ObjectBuilder<T> set(V value, BiConsumer<? super T, ? super V> setter)
     {
         return modify(obj -> setter.accept(obj, value));
     }
