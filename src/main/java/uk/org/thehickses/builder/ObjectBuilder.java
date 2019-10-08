@@ -58,7 +58,12 @@ public class ObjectBuilder<T>
      */
     public T build()
     {
-        return builder.get().get();
+        return getBuilder().get();
+    }
+
+    private Supplier<T> getBuilder()
+    {
+        return builder.get();
     }
 
     /**
@@ -70,13 +75,15 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder<T> modify(Consumer<? super T> modifier)
     {
-        builder.updateAndGet(b -> () ->
-            {
-                T obj = b.get();
-                modifier.accept(obj);
-                return obj;
-            });
+        builder.updateAndGet(b -> () -> doModification(b.get(), modifier, obj -> true));
         return this;
+    }
+
+    private T doModification(T object, Consumer<? super T> modifier, Predicate<? super T> condition)
+    {
+        if (condition.test(object))
+            modifier.accept(object);
+        return object;
     }
 
     /**
@@ -92,11 +99,7 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder<T> modify(Consumer<? super T> modifier, Predicate<? super T> condition)
     {
-        return modify(obj ->
-            {
-                if (condition.test(obj))
-                    modifier.accept(obj);
-            });
+        return modify(obj -> doModification(obj, modifier, condition));
     }
 
     /**
