@@ -15,7 +15,7 @@ public class ObjectBuilderTest
     {
         void setName(String name);
     }
-    
+
     private static interface TestObj extends TestSuper
     {
         void setNumber(int number);
@@ -62,14 +62,15 @@ public class ObjectBuilderTest
         assertThat(actual2).isNotSameAs(actual1);
         InOrder inOrder = inOrder(copier, actual1, actual2);
         inOrder.verify(copier).apply(initObj);
-        Stream.of(actual1, actual2).forEach(o -> {
-            assertThat(o).isNotSameAs(initObj);
-            assertThat(o).isNotSameAs(snapshot);
-            inOrder.verify(copier).apply(snapshot);
-            inOrder.verify(o).setName(name);
-            inOrder.verify(o).setNumber(number);
-            inOrder.verify(o).setFlag(flag);
-        });
+        Stream.of(actual1, actual2).forEach(o ->
+            {
+                assertThat(o).isNotSameAs(initObj);
+                assertThat(o).isNotSameAs(snapshot);
+                inOrder.verify(copier).apply(snapshot);
+                inOrder.verify(o).setName(name);
+                inOrder.verify(o).setNumber(number);
+                inOrder.verify(o).setFlag(flag);
+            });
         verifyNoMoreInteractions(initObj, snapshot, copier, actual1, actual2);
     }
 
@@ -96,6 +97,21 @@ public class ObjectBuilderTest
     public void testWithNoModifiers()
     {
         TestObj actual = new ObjectBuilder<>(() -> mock(TestObj.class)).build();
+        verifyNoMoreInteractions(actual);
+    }
+
+    @Test
+    public void testWithConditionalModifications()
+    {
+        TestObj actual = new ObjectBuilder<>(() -> mock(TestObj.class))
+                .modify(obj -> obj.setName("Hello"), obj -> true)
+                .modify(obj -> obj.setName("Goodbye"), obj -> false)
+                .set(1, TestObj::setNumber, (obj, value) -> value % 2 == 1)
+                .set(2, TestObj::setNumber, (obj, value) -> value % 2 == 1)
+                .build();
+        InOrder inOrder = inOrder(actual);
+        inOrder.verify(actual).setName("Hello");
+        inOrder.verify(actual).setNumber(1);
         verifyNoMoreInteractions(actual);
     }
 }

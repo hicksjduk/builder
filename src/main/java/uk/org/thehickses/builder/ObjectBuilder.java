@@ -1,8 +1,11 @@
 package uk.org.thehickses.builder;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -19,7 +22,7 @@ public class ObjectBuilder<T>
     /**
      * The builder function which creates and initialises the built object.
      */
-    private Supplier<T> builder;
+    private final AtomicReference<Supplier<T>> builder;
 
     /**
      * Initializes the builder with the specified creator.
@@ -29,7 +32,7 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder(Supplier<T> creator)
     {
-        builder = creator;
+        builder = new AtomicReference<>(creator);
     }
 
     /**
@@ -44,7 +47,7 @@ public class ObjectBuilder<T>
     public ObjectBuilder(T object, Function<? super T, ? extends T> copier)
     {
         T snapshot = copier.apply(object);
-        builder = () -> copier.apply(snapshot);
+        builder = new AtomicReference<>(() -> copier.apply(snapshot));
     }
 
     /**
@@ -55,12 +58,7 @@ public class ObjectBuilder<T>
      */
     public T build()
     {
-        Supplier<T> b;
-        synchronized (this)
-        {
-            b = builder;
-        }
-        return b.get();
+        return builder.get().get();
     }
 
     /**
@@ -70,15 +68,35 @@ public class ObjectBuilder<T>
      *            a consumer which accepts the built object and may perform any processing on it.
      * @return the builder, to enable chaining of calls.
      */
-    public synchronized ObjectBuilder<T> modify(Consumer<? super T> modifier)
+    public ObjectBuilder<T> modify(Consumer<? super T> modifier)
     {
-        Supplier<T> b = builder;
-        builder = ()  -> {
-            T obj = b.get();
-            modifier.accept(obj);
-            return obj;
-        };
+        builder.updateAndGet(b -> () ->
+            {
+                T obj = b.get();
+                modifier.accept(obj);
+                return obj;
+            });
         return this;
+    }
+
+    /**
+     * Adds a modification that is to be applied when building an object, provided that the specified condition is
+     * satisfied.
+     * 
+     * @param modifier
+     *            a consumer which accepts the built object and may perform any processing on it.
+     * @param condition
+     *            a predicate which accepts the built object and which must evaluate true (at build time) if the
+     *            modification is to be performed.
+     * @return the builder, to enable chaining of calls.
+     */
+    public ObjectBuilder<T> modify(Consumer<? super T> modifier, Predicate<? super T> condition)
+    {
+        return modify(obj ->
+            {
+                if (condition.test(obj))
+                    modifier.accept(obj);
+            });
     }
 
     /**
@@ -93,5 +111,24 @@ public class ObjectBuilder<T>
     public <V> ObjectBuilder<T> set(V value, BiConsumer<? super T, ? super V> setter)
     {
         return modify(obj -> setter.accept(obj, value));
+    }
+
+    /**
+     * Adds a modification that consists of calling a setter method with the specified value, provided that the
+     * specified condition is satisfied.
+     * 
+     * @param value
+     *            the value that is to be passed to the setter.
+     * @param setter
+     *            a consumer which invokes the setter method on the built object, passing the specified value.
+     * @param condition
+     *            a predicate which accepts the built object and the input value, and which must evaluate true (at build
+     *            time) if the modification is to be performed.
+     * @return the builder, to enable chaining of calls.
+     */
+    public <V> ObjectBuilder<T> set(V value, BiConsumer<? super T, ? super V> setter,
+            BiPredicate<? super T, ? super V> condition)
+    {
+        return modify(obj -> setter.accept(obj, value), obj -> condition.test(obj, value));
     }
 }
