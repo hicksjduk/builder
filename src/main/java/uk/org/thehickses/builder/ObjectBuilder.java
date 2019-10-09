@@ -67,9 +67,9 @@ public class ObjectBuilder<T>
         return builder.get();
     }
 
-    private ObjectBuilder<T> modify(UnaryOperator<T> modifier)
+    private ObjectBuilder<T> addModification(UnaryOperator<T> modification)
     {
-        builder.updateAndGet(b -> () -> modifier.apply(b.get()));
+        builder.updateAndGet(b -> () -> modification.apply(b.get()));
         return this;
     }
 
@@ -82,15 +82,15 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder<T> modify(Consumer<? super T> modifier)
     {
-        return modify(modification(modifier));
+        return addModification(modification(modifier));
     }
 
-    private UnaryOperator<T> modification(Consumer<? super T> modifier)
+    private static <T> UnaryOperator<T> modification(Consumer<? super T> modifier)
     {
         return obj -> doModification(obj, modifier);
     }
 
-    private T doModification(T object, Consumer<? super T> modifier)
+    private static <T> T doModification(T object, Consumer<? super T> modifier)
     {
         modifier.accept(object);
         return object;
@@ -109,10 +109,10 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder<T> modify(Consumer<? super T> modifier, Predicate<? super T> condition)
     {
-        return modify(conditionalModification(modifier, condition));
+        return addModification(conditionalModification(modifier, condition));
     }
 
-    private UnaryOperator<T> conditionalModification(Consumer<? super T> modifier,
+    private static <T> UnaryOperator<T> conditionalModification(Consumer<? super T> modifier,
             Predicate<? super T> condition)
     {
         return obj -> condition.test(obj) ? doModification(obj, modifier) : obj;
