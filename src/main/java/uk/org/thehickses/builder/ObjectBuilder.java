@@ -103,8 +103,8 @@ public class ObjectBuilder<T>
      * @param modifier
      *            a consumer which accepts the built object and may perform any processing on it.
      * @param condition
-     *            a predicate which accepts the built object and which must evaluate true (at build time) if the
-     *            modification is to be performed.
+     *            a predicate which accepts the built object and which must evaluate true if the modification is to be
+     *            performed.
      * @return the builder, to enable chaining of calls.
      */
     public ObjectBuilder<T> modify(Consumer<? super T> modifier, Predicate<? super T> condition)
@@ -141,8 +141,8 @@ public class ObjectBuilder<T>
      * @param setter
      *            a consumer which invokes the setter method on the built object, passing the specified value.
      * @param condition
-     *            a predicate which accepts the built object and the input value, and which must evaluate true (at build
-     *            time) if the modification is to be performed.
+     *            a predicate which accepts the built object and the input value, and which must evaluate true if the
+     *            modification is to be performed.
      * @return the builder, to enable chaining of calls.
      */
     public <V> ObjectBuilder<T> set(V value, BiConsumer<? super T, ? super V> setter,
