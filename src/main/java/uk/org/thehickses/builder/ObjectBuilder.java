@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * A generic implementation of the Builder pattern which can construct an instance of any type. It works best with types
@@ -75,8 +76,20 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder<T> modify(Consumer<? super T> modifier)
     {
-        builder.updateAndGet(b -> () -> doModification(b.get(), modifier, obj -> true));
+        modify(conditionalModifier(modifier, obj -> true));
         return this;
+    }
+
+    private ObjectBuilder<T> modify(UnaryOperator<T> modifier)
+    {
+        builder.updateAndGet(b -> () -> modifier.apply(b.get()));
+        return this;
+    }
+
+    private UnaryOperator<T> conditionalModifier(Consumer<? super T> modifier,
+            Predicate<? super T> condition)
+    {
+        return obj -> doModification(obj, modifier, condition);
     }
 
     private T doModification(T object, Consumer<? super T> modifier, Predicate<? super T> condition)
@@ -99,7 +112,7 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder<T> modify(Consumer<? super T> modifier, Predicate<? super T> condition)
     {
-        return modify(obj -> doModification(obj, modifier, condition));
+        return modify(conditionalModifier(modifier, condition));
     }
 
     /**
