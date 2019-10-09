@@ -76,8 +76,7 @@ public class ObjectBuilder<T>
      */
     public ObjectBuilder<T> modify(Consumer<? super T> modifier)
     {
-        modify(conditionalModifier(modifier, obj -> true));
-        return this;
+        return modify(conditionalModifier(modifier, obj -> true));
     }
 
     private ObjectBuilder<T> modify(UnaryOperator<T> modifier)
