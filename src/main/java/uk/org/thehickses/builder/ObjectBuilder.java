@@ -69,8 +69,13 @@ public class ObjectBuilder<T>
 
     private ObjectBuilder<T> addModification(UnaryOperator<T> modification)
     {
-        builder.updateAndGet(b -> () -> modification.apply(b.get()));
+        builder.updateAndGet(modifier(modification));
         return this;
+    }
+
+    private static <T> UnaryOperator<Supplier<T>> modifier(UnaryOperator<T> modification)
+    {
+        return builder -> () -> modification.apply(builder.get());
     }
 
     /**
